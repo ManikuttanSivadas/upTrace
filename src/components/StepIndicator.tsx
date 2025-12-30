@@ -2,14 +2,30 @@ import { View, Text, StyleSheet } from 'react-native';
 import { COLORS } from '../theme/colors';
 
 export default function StepIndicator({ step }: { step: number }) {
+  const steps = [
+    { num: 1, label: 'Details' },
+    { num: 2, label: 'Exercises' },
+  ];
+
   return (
     <View style={styles.container}>
-      {[1, 2].map((num) => (
-        <View key={num} style={styles.step}>
-          <View style={[styles.circle, step === num && styles.active]}>
-            <Text style={styles.text}>{num}</Text>
+      {steps.map((s, idx) => (
+        <View key={s.num} style={styles.stepWrapper}>
+          <View style={styles.stepContent}>
+            <View style={[styles.circle, step >= s.num && styles.active, step === s.num && styles.current]}>
+              {step > s.num ? (
+                <Text style={styles.checkmark}>✓</Text>
+              ) : (
+                <Text style={[styles.text, step >= s.num && styles.activeText]}>{s.num}</Text>
+              )}
+            </View>
+            <Text style={[styles.label, step >= s.num && styles.activeLabel]}>{s.label}</Text>
           </View>
-          {num === 1 && <View style={styles.line} />}
+          {idx === 0 && (
+            <View style={styles.lineContainer}>
+              <View style={[styles.line, step > 1 && styles.activeLine]} />
+            </View>
+          )}
         </View>
       ))}
     </View>
@@ -17,17 +33,79 @@ export default function StepIndicator({ step }: { step: number }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flexDirection: 'row', marginBottom: 20 },
-  step: { flexDirection: 'row', alignItems: 'center' },
+  container: {
+    flexDirection: 'row',
+    marginBottom: 40,
+    marginTop: -80,
+    paddingVertical: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stepWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  stepContent: {
+    alignItems: 'center',
+  },
   circle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: COLORS.surfaceLight,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.surface,
+    borderWidth: 2,
+    borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 6,
   },
-  active: { backgroundColor: COLORS.primary },
-  line: { width: 40, height: 2, backgroundColor: COLORS.border },
-  text: { color: COLORS.textPrimary, fontWeight: '600' },
+  active: {
+    backgroundColor: COLORS.primary + '20',
+    borderColor: COLORS.primary,
+  },
+  current: {
+    backgroundColor: COLORS.primary,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  text: {
+    color: COLORS.textSecondary,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  activeText: {
+    color: '#FFFFFF',
+  },
+  checkmark: {
+    color: COLORS.primary,
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  label: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  activeLabel: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  lineContainer: {
+    paddingHorizontal: 8,
+    paddingTop: 0,
+    paddingBottom: 20,
+    width: 80,
+  },
+  line: {
+    height: 2,
+    backgroundColor: COLORS.border,
+    marginTop: -20,
+    width: 80,
+  },
+  activeLine: {
+    backgroundColor: COLORS.primary,
+  },
 });

@@ -1,5 +1,5 @@
-import { View, Text, TextInput, Pressable, StyleSheet, Alert } from 'react-native';
-import { useState } from 'react';
+import { View, Text, TextInput, Pressable, StyleSheet, Alert, ScrollView } from 'react-native';
+import { useState, useRef } from 'react';
 import * as Crypto from 'expo-crypto';
 import { Exercise } from '../types/workout';
 import { COLORS } from '../theme/colors';
@@ -22,6 +22,7 @@ export default function ExercisesStep({
   const [isNameSubmitted, setIsNameSubmitted] = useState(false);
   const [editingExerciseId, setEditingExerciseId] = useState<string | null>(null);
   const [editingSetIndex, setEditingSetIndex] = useState<number | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const submitName = () => {
     if (!name.trim()) return;
@@ -59,6 +60,9 @@ export default function ExercisesStep({
     setName('');
     setIsNameSubmitted(false);
     setEditingSetIndex(null);
+    
+    // Scroll to top after completing exercise
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
 
   const deleteExercise = (exerciseId: string) => {
@@ -135,7 +139,11 @@ export default function ExercisesStep({
   };
 
   return (
-    <View>
+    <ScrollView 
+      ref={scrollViewRef}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.scrollContent}
+    >
       <View style={styles.card}>
         <TextInput
           placeholder="Exercise name"
@@ -145,7 +153,7 @@ export default function ExercisesStep({
           style={styles.input}
           editable={!isNameSubmitted}
         />
-        
+
         {!isNameSubmitted && name.trim() && (
           <Pressable style={styles.fullButton} onPress={submitName}>
             <Text style={styles.buttonText}>Start Exercise</Text>
@@ -156,6 +164,7 @@ export default function ExercisesStep({
           <>
             <TextInput
               placeholder="Weight (kg)"
+              placeholderTextColor={COLORS.textSecondary}
               keyboardType="numeric"
               value={weight}
               onChangeText={setWeight}
@@ -164,6 +173,7 @@ export default function ExercisesStep({
             <TextInput
               placeholder="Reps"
               keyboardType="numeric"
+              placeholderTextColor={COLORS.textSecondary}
               value={reps}
               onChangeText={setReps}
               style={styles.input}
@@ -189,7 +199,7 @@ export default function ExercisesStep({
           <Text style={styles.currentExerciseTitle}>Current: {current.name}</Text>
           {current.sets.map((s, i) => (
             <View key={i} style={styles.setRow}>
-              <Pressable 
+              <Pressable
                 style={[styles.setTextContainer, editingSetIndex === i && styles.setTextContainerEditing]}
                 onPress={() => startEditSet(i)}
               >
@@ -248,102 +258,131 @@ export default function ExercisesStep({
         </View>
       )}
 
-      <Pressable style={styles.save} onPress={onSave}>
-        <Text style={styles.buttonText}>Save Workout</Text>
-      </Pressable>
+      {(isNameSubmitted || exercises.length > 0) && (
+        <Pressable style={styles.save} onPress={onSave}>
+          <Text style={styles.buttonText}>Save Workout</Text>
+        </Pressable>
+      )}
 
       <Pressable style={styles.backButton} onPress={handleBack}>
         <Text style={styles.backButtonText}>Back to Details</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    paddingBottom: 100,
+  },
   card: {
     backgroundColor: COLORS.surface,
-    padding: 18,
-    borderRadius: 18,
+    padding: 20,
+    borderRadius: 20,
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   input: {
     backgroundColor: COLORS.surfaceLight,
-    padding: 14,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 14,
     color: COLORS.textPrimary,
-    marginBottom: 10,
+    marginBottom: 12,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   currentExerciseTitle: {
     color: COLORS.textPrimary,
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 10,
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 16,
   },
   setRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 10,
   },
   setTextContainer: {
     flex: 1,
-    padding: 8,
-    borderRadius: 8,
+    padding: 12,
+    borderRadius: 12,
     backgroundColor: COLORS.surfaceLight,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   setTextContainerEditing: {
-    backgroundColor: COLORS.primary + '20',
-    borderWidth: 1,
+    backgroundColor: COLORS.primary + '15',
+    borderWidth: 2,
     borderColor: COLORS.primary,
   },
-  setText: { 
-    color: COLORS.textSecondary,
+  setText: {
+    color: COLORS.textPrimary,
+    fontSize: 16,
+    fontWeight: '600',
+    lineHeight: 22,
   },
   editHint: {
     color: COLORS.textSecondary,
     fontSize: 11,
     fontStyle: 'italic',
-    marginTop: 2,
+    marginTop: 4,
   },
   deleteSetButton: {
     backgroundColor: COLORS.danger,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: 10,
   },
   deleteSetText: {
     color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '600',
-    lineHeight: 20,
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 22,
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
   },
   button: {
     backgroundColor: COLORS.primary,
-    padding: 14,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   fullButton: {
     backgroundColor: COLORS.primary,
-    padding: 14,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+    marginTop: 8,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   cancelButton: {
     backgroundColor: COLORS.textSecondary,
-    padding: 14,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 14,
     alignItems: 'center',
     flex: 1,
   },
@@ -352,28 +391,34 @@ const styles = StyleSheet.create({
   },
   completedTitle: {
     color: COLORS.textPrimary,
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 16,
+    letterSpacing: 0.3,
   },
   completedCard: {
     backgroundColor: COLORS.surface,
-    padding: 16,
-    borderRadius: 12,
+    padding: 18,
+    borderRadius: 16,
     marginBottom: 12,
     borderLeftWidth: 4,
     borderLeftColor: COLORS.primary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   exerciseHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   exerciseName: {
     color: COLORS.textPrimary,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
     flex: 1,
   },
   actionButtons: {
@@ -382,37 +427,42 @@ const styles = StyleSheet.create({
   },
   editButton: {
     backgroundColor: COLORS.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
   },
   editButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
   },
   deleteButton: {
     backgroundColor: COLORS.danger,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
   },
   deleteButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
   },
   save: {
     backgroundColor: COLORS.primary,
-    padding: 16,
-    borderRadius: 14,
+    padding: 18,
+    borderRadius: 16,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 12,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 6,
   },
   backButton: {
-    paddingVertical: 14,
+    paddingVertical: 16,
     paddingHorizontal: 16,
-    marginTop: 8,
+    marginTop: 12,
     alignItems: 'center',
   },
   backButtonText: {
@@ -420,9 +470,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  buttonText: { 
-    color: '#FFFFFF', 
-    fontWeight: '600',
-    fontSize: 16,
+  buttonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 17,
+    letterSpacing: 0.5,
   },
 });

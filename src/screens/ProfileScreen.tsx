@@ -9,19 +9,46 @@ import {
   Alert,
   Image,
   Platform,
+  Modal,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuth } from '../contexts/AuthContext';
 import { COLORS } from '../theme/colors';
 import { supabase } from '../config/supabase';
 import * as ImagePicker from 'expo-image-picker';
 
+const COUNTRIES = [
+  'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria',
+  'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan',
+  'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia',
+  'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo', 'Costa Rica',
+  'Croatia', 'Cuba', 'Cyprus', 'Czech Republic', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador', 'Egypt',
+  'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland', 'France', 'Gabon',
+  'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana',
+  'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel',
+  'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Korea, North', 'Korea, South', 'Kosovo',
+  'Kuwait', 'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania',
+  'Luxembourg', 'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius',
+  'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia',
+  'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Macedonia', 'Norway', 'Oman',
+  'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal',
+  'Qatar', 'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Sao Tome and Principe',
+  'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia',
+  'South Africa', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria', 'Taiwan',
+  'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan',
+  'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City',
+  'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
+];
+
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUserProfile } = useAuth();
+  const navigation = useNavigation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [gender, setGender] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
+  const [extension, setExtension] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [age, setAge] = useState('');
   const [profilePicture, setProfilePicture] = useState('');
@@ -29,6 +56,10 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showGenderPicker, setShowGenderPicker] = useState(false);
+  const [country, setCountry] = useState('');
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
 
   useEffect(() => {
     loadProfile();
@@ -56,6 +87,7 @@ export default function ProfileScreen() {
         setName(data.name || '');
         setEmail(data.email || '');
         setGender(data.gender || '');
+        setCountry(data.country || '');
         setMobileNumber(data.mobile_number || '');
         setDateOfBirth(data.date_of_birth || '');
         setProfilePicture(data.profile_picture_url || '');
@@ -134,6 +166,7 @@ export default function ProfileScreen() {
         .update({
           name,
           gender,
+          country,
           mobile_number: mobileNumber,
           date_of_birth: dateOfBirth || null,
           profile_picture_url: profilePicture,
@@ -142,6 +175,7 @@ export default function ProfileScreen() {
 
       if (error) throw error;
 
+      await refreshUserProfile();
       Alert.alert('Success', 'Profile updated successfully');
       setIsEditing(false);
       loadProfile();
@@ -171,6 +205,9 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
+        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.backButtonText}>← Back</Text>
+        </Pressable>
         <Text style={styles.headerText}>My Profile</Text>
         <Pressable style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Logout</Text>
@@ -216,53 +253,171 @@ export default function ProfileScreen() {
           />
 
           <Text style={styles.label}>Gender</Text>
-          <View style={styles.genderContainer}>
-            {['Male', 'Female', 'Other'].map((option) => (
-              <Pressable
-                key={option}
-                style={[
-                  styles.genderButton,
-                  gender === option && styles.genderButtonActive,
-                ]}
-                onPress={() => {
-                  setGender(option);
-                  setIsEditing(true);
-                }}
-              >
-                <Text
-                  style={[
-                    styles.genderButtonText,
-                    gender === option && styles.genderButtonTextActive,
-                  ]}
-                >
-                  {option}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-
-          <Text style={styles.label}>Mobile Number</Text>
-          <TextInput
-            style={styles.input}
-            value={mobileNumber}
-            onChangeText={(text) => {
-              setMobileNumber(text);
-              setIsEditing(true);
-            }}
-            placeholder="Enter mobile number"
-            placeholderTextColor={COLORS.textSecondary}
-            keyboardType="phone-pad"
-          />
-
-          <Text style={styles.label}>Date of Birth</Text>
           <Pressable 
-            style={styles.datePickerButton}
-            onPress={() => setShowDatePicker(true)}
+            style={styles.input}
+            onPress={() => setShowGenderPicker(true)}
           >
-            <Text style={[styles.datePickerText, !dateOfBirth && styles.placeholderText]}>
-              {dateOfBirth || 'Select Date of Birth'}
+            <Text style={[styles.text, !gender && styles.placeholderText]}>
+              {gender || 'Select Gender'}
             </Text>
           </Pressable>
+
+          <Modal
+            visible={showGenderPicker}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setShowGenderPicker(false)}
+          >
+            <Pressable 
+              style={styles.modalOverlay}
+              onPress={() => setShowGenderPicker(false)}
+            >
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Select Gender</Text>
+                {['Male', 'Female', 'Other', 'Prefer not to say'].map((option) => (
+                  <Pressable
+                    key={option}
+                    style={styles.modalOption}
+                    onPress={() => {
+                      setGender(option);
+                      setIsEditing(true);
+                      setShowGenderPicker(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.modalOptionText,
+                      gender === option && styles.modalOptionTextActive
+                    ]}>
+                      {option}
+                    </Text>
+                    {gender === option && (
+                      <Text style={styles.checkmark}>✓</Text>
+                    )}
+                  </Pressable>
+                ))}
+                <Pressable 
+                  style={styles.modalCancelButton}
+                  onPress={() => setShowGenderPicker(false)}
+                >
+                  <Text style={styles.modalCancelText}>Cancel</Text>
+                </Pressable>
+              </View>
+            </Pressable>
+          </Modal>
+
+          <Text style={styles.label}>Country</Text>
+          <Pressable 
+            style={styles.input}
+            onPress={() => setShowCountryPicker(true)}
+          >
+            <Text style={[styles.text, !country && styles.placeholderText]}>
+              {country || 'Select Country'}
+            </Text>
+          </Pressable>
+
+          <Modal
+            visible={showCountryPicker}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setShowCountryPicker(false)}
+          >
+            <Pressable 
+              style={styles.modalOverlay}
+              onPress={() => setShowCountryPicker(false)}
+            >
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Select Country</Text>
+                <TextInput
+                  style={styles.searchInput}
+                  value={countrySearch}
+                  onChangeText={setCountrySearch}
+                  placeholder="Search country..."
+                  placeholderTextColor={COLORS.textSecondary}
+                  autoCapitalize="none"
+                />
+                <ScrollView style={styles.modalScrollView}>
+                  {COUNTRIES.filter(c => 
+                    c.toLowerCase().includes(countrySearch.toLowerCase())
+                  ).map((option) => (
+                    <Pressable
+                      key={option}
+                      style={styles.modalOption}
+                      onPress={() => {
+                        setCountry(option);
+                        setIsEditing(true);
+                        setShowCountryPicker(false);
+                        setCountrySearch('');
+                      }}
+                    >
+                      <Text style={[
+                        styles.modalOptionText,
+                        country === option && styles.modalOptionTextActive
+                      ]}>
+                        {option}
+                      </Text>
+                      {country === option && (
+                        <Text style={styles.checkmark}>✓</Text>
+                      )}
+                    </Pressable>
+                  ))}
+                </ScrollView>
+                <Pressable 
+                  style={styles.modalCancelButton}
+                  onPress={() => {
+                    setShowCountryPicker(false);
+                    setCountrySearch('');
+                  }}
+                >
+                  <Text style={styles.modalCancelText}>Cancel</Text>
+                </Pressable>
+              </View>
+            </Pressable>
+          </Modal>
+
+          <Text style={styles.label}>Extension & Mobile Number</Text>
+          <View style={styles.rowContainer}>
+            <TextInput
+              style={[styles.input, styles.inputSmall]}
+              value={extension}
+              onChangeText={(text) => {
+                setExtension(text);
+                setIsEditing(true);
+              }}
+              placeholder="Ext"
+              placeholderTextColor={COLORS.textSecondary}
+              keyboardType="phone-pad"
+            />
+            <TextInput
+              style={[styles.input, styles.inputFlex]}
+              value={mobileNumber}
+              onChangeText={(text) => {
+                setMobileNumber(text);
+                setIsEditing(true);
+              }}
+              placeholder="Enter mobile number"
+              placeholderTextColor={COLORS.textSecondary}
+              keyboardType="phone-pad"
+            />
+          </View>
+
+          <Text style={styles.label}>Date of Birth & Age</Text>
+          <View style={styles.rowContainer}>
+            <Pressable 
+              style={[styles.datePickerButton, styles.inputFlex]}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Text style={[styles.datePickerText, !dateOfBirth && styles.placeholderText]}>
+                {dateOfBirth || 'Select Date of Birth'}
+              </Text>
+            </Pressable>
+            <TextInput
+              style={[styles.input, styles.inputDisabled, styles.inputSmall]}
+              value={age}
+              editable={false}
+              placeholder="Auto"
+              placeholderTextColor={COLORS.textSecondary}
+            />
+          </View>
 
           {showDatePicker && (
             <DateTimePicker
@@ -273,15 +428,6 @@ export default function ProfileScreen() {
               maximumDate={new Date()}
             />
           )}
-
-          <Text style={styles.label}>Age</Text>
-          <TextInput
-            style={[styles.input, styles.inputDisabled]}
-            value={age}
-            editable={false}
-            placeholder="Calculated from DOB"
-            placeholderTextColor={COLORS.textSecondary}
-          />
         </View>
 
         {isEditing && (
@@ -312,10 +458,20 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingTop: 60,
   },
+  backButton: {
+    paddingVertical: 8,
+  },
+  backButtonText: {
+    color: COLORS.primary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
   headerText: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: COLORS.textPrimary,
+    flex: 1,
+    textAlign: 'center',
   },
   logoutButton: {
     backgroundColor: COLORS.danger,
@@ -386,29 +542,85 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     color: COLORS.textSecondary,
   },
-  genderContainer: {
+  text: {
+    color: COLORS.textPrimary,
+    fontSize: 16,
+  },
+  rowContainer: {
     flexDirection: 'row',
     gap: 12,
   },
-  genderButton: {
+  inputFlex: {
     flex: 1,
+  },
+  inputSmall: {
+    width: 90,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 24,
+    paddingBottom: 40,
+    maxHeight: '70%',
+  },
+  modalScrollView: {
+    maxHeight: 300,
+  },
+  searchInput: {
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
     padding: 12,
-    borderRadius: 8,
+    marginBottom: 12,
+    fontSize: 16,
+    color: COLORS.textPrimary,
     borderWidth: 1,
     borderColor: COLORS.border,
-    alignItems: 'center',
   },
-  genderButtonActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  genderButtonText: {
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
     color: COLORS.textPrimary,
-    fontSize: 14,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: COLORS.background,
+  },
+  modalOptionText: {
+    fontSize: 16,
+    color: COLORS.textPrimary,
     fontWeight: '500',
   },
-  genderButtonTextActive: {
-    color: '#FFFFFF',
+  modalOptionTextActive: {
+    color: COLORS.primary,
+    fontWeight: '700',
+  },
+  checkmark: {
+    fontSize: 20,
+    color: COLORS.primary,
+    fontWeight: 'bold',
+  },
+  modalCancelButton: {
+    marginTop: 12,
+    padding: 16,
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
   },
   datePickerButton: {
     backgroundColor: COLORS.surface,

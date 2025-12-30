@@ -109,10 +109,10 @@ export default function LogWorkoutScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text style={styles.header}>Log Workout</Text>
+        <Text style={styles.header}>Hello, {userName || 'User'}!</Text>
         <Pressable 
           style={styles.avatarButton}
-          onPress={() => navigation.navigate('Profile' as never)}
+          onPress={() => navigation.navigate('EditProfile' as never)}
         >
           {profilePicture ? (
             <Image source={{ uri: profilePicture }} style={styles.avatar} />
@@ -125,60 +125,102 @@ export default function LogWorkoutScreen() {
           )}
         </Pressable>
       </View>
-      <StepIndicator step={step} />
 
       {step === 1 && (
-        <WorkoutDetailsStep
-          workoutName={workout.name}
-          workoutDate={workout.date}
-          setWorkoutName={(v) => setWorkout({ ...workout, name: v })}
-          setWorkoutDate={(v) => setWorkout({ ...workout, date: v })}
-          onNext={() => setStep(2)}
-        />
+        <View style={styles.contentContainer}>
+          <Text style={styles.pageTitle}>Log Workout</Text>
+          <StepIndicator step={step} />
+          
+          <WorkoutDetailsStep
+            workoutName={workout.name}
+            workoutDate={workout.date}
+            setWorkoutName={(v) => setWorkout({ ...workout, name: v })}
+            setWorkoutDate={(v) => setWorkout({ ...workout, date: v })}
+            onNext={() => setStep(2)}
+          />
+        </View>
       )}
 
       {step === 2 && (
-        <ExercisesStep
-          exercises={workout.exercises}
-          setExercises={(v) => setWorkout({ ...workout, exercises: v })}
-          onSave={saveWorkout}
-          onBack={() => setStep(1)}
-        />
+        <View style={styles.exercisesContainer}>
+          <Text style={styles.pageTitle}>Log Workout</Text>
+          <StepIndicator step={step} />
+          <ExercisesStep
+            exercises={workout.exercises}
+            setExercises={(v) => setWorkout({ ...workout, exercises: v })}
+            onSave={saveWorkout}
+            onBack={() => setStep(1)}
+          />
+        </View>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, paddingTop: 60, backgroundColor: COLORS.background },
+  container: { 
+    flex: 1, 
+    padding: 16, 
+    paddingTop: 60, 
+    backgroundColor: COLORS.background,
+  },
   headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 0,
+  },
+  contentContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    maxWidth: 500,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  exercisesContainer: {
+    flex: 1,
+    paddingTop: 20,
   },
   header: {
     color: COLORS.textPrimary,
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  pageTitle: {
+    color: COLORS.textPrimary,
+    fontSize: 32,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    textAlign: 'center',
+    marginBottom: 150,
   },
   avatarButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
   },
   avatarPlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.primary + '40',
   },
   avatarText: {
     color: '#FFFFFF',

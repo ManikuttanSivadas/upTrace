@@ -1,9 +1,11 @@
 -- Add additional profile fields
 ALTER TABLE profiles
-ADD COLUMN gender TEXT,
-ADD COLUMN mobile_number TEXT,
-ADD COLUMN date_of_birth DATE,
-ADD COLUMN profile_picture_url TEXT;
+ADD COLUMN IF NOT EXISTS gender TEXT,
+ADD COLUMN IF NOT EXISTS country TEXT,
+ADD COLUMN IF NOT EXISTS mobile_number TEXT,
+ADD COLUMN IF NOT EXISTS extension TEXT,
+ADD COLUMN IF NOT EXISTS date_of_birth DATE,
+ADD COLUMN IF NOT EXISTS profile_picture_url TEXT;
 
 -- Update the trigger function to handle new fields
 CREATE OR REPLACE FUNCTION public.handle_new_user()
