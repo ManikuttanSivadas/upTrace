@@ -6,10 +6,10 @@ export const saveWorkout = async (workout: Workout): Promise<void> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
-    // Insert workout
+    // Upsert workout (insert or update if exists)
     const { data: workoutData, error: workoutError } = await supabase
       .from('workouts')
-      .insert({
+      .upsert({
         id: workout.id,
         user_id: user.id,
         name: workout.name,
@@ -19,6 +19,14 @@ export const saveWorkout = async (workout: Workout): Promise<void> => {
       .single();
 
     if (workoutError) throw workoutError;
+
+    // Delete existing exercises and sets for this workout (in case of retry)
+    const { error: deleteExercisesError } = await supabase
+      .from('exercises')
+      .delete()
+      .eq('workout_id', workout.id);
+
+    if (deleteExercisesError) throw deleteExercisesError;
 
     // Insert exercises and sets
     for (let i = 0; i < workout.exercises.length; i++) {

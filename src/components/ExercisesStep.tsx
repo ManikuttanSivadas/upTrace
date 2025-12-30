@@ -77,6 +77,9 @@ export default function ExercisesStep({
     setName(exercise.name);
     setIsNameSubmitted(true);
     setEditingSetIndex(null);
+    
+    // Auto scroll to top to show the exercise inputs
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
 
   const deleteSet = (setIndex: number) => {
@@ -99,6 +102,9 @@ export default function ExercisesStep({
     setWeight(set.weight.toString());
     setReps(set.reps.toString());
     setEditingSetIndex(setIndex);
+    
+    // Auto scroll to top to show the edit inputs
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
 
   const cancelEditSet = () => {
@@ -238,13 +244,13 @@ export default function ExercisesStep({
                     style={styles.editButton}
                     onPress={() => editExercise(exercise)}
                   >
-                    <Text style={styles.editButtonText}>Edit</Text>
+                    <Text style={styles.editButtonText}>✎</Text>
                   </Pressable>
                   <Pressable
                     style={styles.deleteButton}
                     onPress={() => deleteExercise(exercise.id)}
                   >
-                    <Text style={styles.deleteButtonText}>Delete</Text>
+                    <Text style={styles.deleteButtonText}>×</Text>
                   </Pressable>
                 </View>
               </View>
@@ -426,26 +432,26 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   editButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   editButtonText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '700',
+    color: COLORS.primary,
+    fontSize: 18,
+    fontWeight: '400',
   },
   deleteButton: {
-    backgroundColor: COLORS.danger,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   deleteButtonText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '700',
+    color: COLORS.danger,
+    fontSize: 24,
+    fontWeight: '300',
   },
   save: {
     backgroundColor: COLORS.primary,
