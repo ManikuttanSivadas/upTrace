@@ -5,13 +5,30 @@ import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../theme/colors';
 import { getWorkouts, getMarkedDates, getWorkoutsByDate, updateWorkout, deleteWorkout } from '../utils/storage';
 import { Workout, Exercise, SetEntry } from '../types/workout';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function HistoryScreen() {
+  const { logout, user } = useAuth();
   const [markedDates, setMarkedDates] = useState<Record<string, any>>({});
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [workoutsForDate, setWorkoutsForDate] = useState<Workout[]>([]);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: logout,
+        },
+      ]
+    );
+  };
 
   const loadMarkedDates = async () => {
     const marked = await getMarkedDates();
@@ -48,8 +65,8 @@ export default function HistoryScreen() {
     // Validate that no sets have empty or 0 values
     const hasInvalidSets = editingWorkout.exercises.some((exercise) =>
       exercise.sets.some((set) => 
-        (set.weight === 0 || set.weight === '' || !set.weight) && 
-        (set.reps === 0 || set.reps === '' || !set.reps)
+        (set.weight === 0 || !set.weight) && 
+        (set.reps === 0 || !set.reps)
       )
     );
 
@@ -211,7 +228,16 @@ export default function HistoryScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Workout History</Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.header}>Workout History</Text>
+        <Pressable style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Logout</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.userInfo}>
+        <Text style={styles.userText}>Welcome, {user?.name}!</Text>
+      </View>
 
       <Calendar
         theme={{
@@ -338,7 +364,7 @@ export default function HistoryScreen() {
                         <Text style={styles.modalSetLabel}>Set {setIdx + 1}</Text>
                         <TextInput
                           style={styles.modalSetInput}
-                          value={set.weight === '' || set.weight === 0 ? '' : set.weight.toString()}
+                          value={set.weight === 0 ? '' : set.weight.toString()}
                           onChangeText={(text) => updateSet(exercise.id, setIdx, 'weight', text)}
                           keyboardType="numeric"
                           placeholder="Weight"
@@ -347,7 +373,7 @@ export default function HistoryScreen() {
                         <Text style={styles.modalSetText}>kg ×</Text>
                         <TextInput
                           style={styles.modalSetInput}
-                          value={set.reps === '' || set.reps === 0 ? '' : set.reps.toString()}
+                          value={set.reps === 0 ? '' : set.reps.toString()}
                           onChangeText={(text) => updateSet(exercise.id, setIdx, 'reps', text)}
                           keyboardType="numeric"
                           placeholder="Reps"
@@ -395,11 +421,34 @@ export default function HistoryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: COLORS.background },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   header: {
     color: COLORS.textPrimary,
     fontSize: 24,
     fontWeight: '600',
+  },
+  logoutButton: {
+    backgroundColor: COLORS.danger,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  logoutButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  userInfo: {
     marginBottom: 16,
+  },
+  userText: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
   },
   workoutsContainer: {
     marginTop: 20,

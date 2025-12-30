@@ -4,6 +4,7 @@ import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import LogWorkoutScreen from '../screens/LogWorkoutScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import TimerScreen from '../screens/TimerScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 import { COLORS } from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
@@ -36,6 +37,7 @@ export default function BottomTabs() {
         <Tab.Screen name="Log Workout" component={LogWorkoutScreen} />
         <Tab.Screen name="History" component={HistoryScreen} />
         <Tab.Screen name="Timer" component={TimerScreen} />
+        <Tab.Screen name="Profile" component={ProfileScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );
