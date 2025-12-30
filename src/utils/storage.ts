@@ -35,6 +35,19 @@ export const deleteWorkout = async (workoutId: string): Promise<void> => {
   }
 };
 
+export const updateWorkout = async (updatedWorkout: Workout): Promise<void> => {
+  try {
+    const workouts = await getWorkouts();
+    const updatedWorkouts = workouts.map((w) =>
+      w.id === updatedWorkout.id ? updatedWorkout : w
+    );
+    await AsyncStorage.setItem(WORKOUTS_KEY, JSON.stringify(updatedWorkouts));
+  } catch (error) {
+    console.error('Error updating workout:', error);
+    throw error;
+  }
+};
+
 export const getWorkoutsByDate = async (date: string): Promise<Workout[]> => {
   try {
     const workouts = await getWorkouts();

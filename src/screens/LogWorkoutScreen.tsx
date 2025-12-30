@@ -22,6 +22,30 @@ export default function LogWorkoutScreen() {
   });
 
   const saveWorkout = async () => {
+    // Validate that there are exercises with sets
+    if (workout.exercises.length === 0) {
+      Alert.alert(
+        'No Exercises',
+        'Please add at least one exercise with sets before saving your workout.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    // Validate that all exercises have at least one set
+    const hasEmptyExercises = workout.exercises.some(
+      (exercise) => exercise.sets.length === 0
+    );
+
+    if (hasEmptyExercises) {
+      Alert.alert(
+        'Incomplete Exercise',
+        'All exercises must have at least one set with weight and reps.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     try {
       await saveWorkoutToStorage(workout);
       
@@ -74,6 +98,7 @@ export default function LogWorkoutScreen() {
           exercises={workout.exercises}
           setExercises={(v) => setWorkout({ ...workout, exercises: v })}
           onSave={saveWorkout}
+          onBack={() => setStep(1)}
         />
       )}
     </View>
