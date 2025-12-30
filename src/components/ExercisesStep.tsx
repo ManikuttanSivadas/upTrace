@@ -1,19 +1,22 @@
-import { View, Text, TextInput, Pressable, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, Pressable, StyleSheet, Alert, ScrollView, TouchableOpacity } from 'react-native';
 import { useState, useRef } from 'react';
 import * as Crypto from 'expo-crypto';
 import { Exercise } from '../types/workout';
 import { COLORS } from '../theme/colors';
+import StepIndicator from './StepIndicator';
 
 export default function ExercisesStep({
   exercises,
   setExercises,
   onSave,
   onBack,
+  isSaving = false,
 }: {
   exercises: Exercise[];
   setExercises: (v: Exercise[]) => void;
   onSave: () => void;
   onBack: () => void;
+  isSaving?: boolean;
 }) {
   const [name, setName] = useState('');
   const [weight, setWeight] = useState('');
@@ -148,8 +151,12 @@ export default function ExercisesStep({
     <ScrollView 
       ref={scrollViewRef}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="always"
       contentContainerStyle={styles.scrollContent}
     >
+      <Text style={styles.pageTitle}>Log Workout</Text>
+      <StepIndicator step={2} />
+      
       <View style={styles.card}>
         <TextInput
           placeholder="Exercise name"
@@ -265,14 +272,21 @@ export default function ExercisesStep({
       )}
 
       {(isNameSubmitted || exercises.length > 0) && (
-        <Pressable style={styles.save} onPress={onSave}>
-          <Text style={styles.buttonText}>Save Workout</Text>
-        </Pressable>
+        <TouchableOpacity 
+          style={[styles.save, isSaving && styles.saveDisabled]} 
+          onPress={onSave} 
+          activeOpacity={0.8}
+          disabled={isSaving}
+        >
+          <Text style={styles.saveButtonText}>
+            {isSaving ? 'Saving...' : 'Save Workout'}
+          </Text>
+        </TouchableOpacity>
       )}
 
-      <Pressable style={styles.backButton} onPress={handleBack}>
+      <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.8}>
         <Text style={styles.backButtonText}>Back to Details</Text>
-      </Pressable>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -280,6 +294,15 @@ export default function ExercisesStep({
 const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 100,
+  },
+  pageTitle: {
+    color: COLORS.textPrimary,
+    fontSize: 24,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+    textAlign: 'center',
+    marginBottom: 20,
+    marginTop: 10,
   },
   card: {
     backgroundColor: COLORS.surface,
@@ -340,18 +363,20 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   deleteSetButton: {
-    backgroundColor: COLORS.danger,
+    backgroundColor: 'transparent',
     width: 32,
     height: 32,
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
+    borderWidth: 1.5,
+    borderColor: COLORS.danger,
   },
   deleteSetText: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '700',
+    color: COLORS.danger,
+    fontSize: 18,
+    fontWeight: '600',
     lineHeight: 22,
   },
   buttonRow: {
@@ -359,38 +384,34 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   button: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.surface,
     padding: 16,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
   },
   fullButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.surface,
     padding: 16,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
     marginTop: 8,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
   },
   cancelButton: {
-    backgroundColor: COLORS.textSecondary,
+    backgroundColor: COLORS.surface,
     padding: 16,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
     flex: 1,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
   },
   completedSection: {
     marginBottom: 16,
@@ -432,38 +453,42 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   editButton: {
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
   editButtonText: {
-    color: COLORS.primary,
-    fontSize: 18,
+    color: '#FFFFFF',
+    fontSize: 22,
     fontWeight: '400',
   },
   deleteButton: {
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
   deleteButtonText: {
-    color: COLORS.danger,
-    fontSize: 24,
+    color: '#FF3B30',
+    fontSize: 22,
     fontWeight: '300',
   },
   save: {
     backgroundColor: COLORS.primary,
     padding: 18,
-    borderRadius: 16,
+    borderRadius: 12,
     alignItems: 'center',
     marginTop: 12,
     shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  saveDisabled: {
+    backgroundColor: COLORS.textSecondary,
+    opacity: 0.6,
   },
   backButton: {
     paddingVertical: 16,
@@ -477,9 +502,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   buttonText: {
+    color: COLORS.primary,
+    fontWeight: '600',
+    fontSize: 16,
+    letterSpacing: 0.3,
+  },
+  saveButtonText: {
     color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 17,
-    letterSpacing: 0.5,
+    fontWeight: '600',
+    fontSize: 16,
+    letterSpacing: 0.3,
   },
 });

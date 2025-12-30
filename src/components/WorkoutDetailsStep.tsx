@@ -101,18 +101,18 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: COLORS.primary,
     padding: 16,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 4,
   },
   buttonText: {
-    color: '#fff',
-    fontWeight: '700',
+    color: '#FFFFFF',
+    fontWeight: '600',
     fontSize: 16,
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
 });

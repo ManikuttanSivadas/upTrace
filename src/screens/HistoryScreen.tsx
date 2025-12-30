@@ -606,7 +606,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   expandIcon: {
-    fontSize: 16,
+    fontSize: 20,
     color: COLORS.primary,
   },
   workoutActions: {
@@ -614,25 +614,25 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   editWorkoutButton: {
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
   editWorkoutButtonText: {
-    color: COLORS.primary,
-    fontSize: 18,
+    color: '#FFFFFF',
+    fontSize: 22,
     fontWeight: '400',
   },
   deleteWorkoutButton: {
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
   deleteWorkoutButtonText: {
-    color: COLORS.danger,
-    fontSize: 24,
+    color: '#FF3B30',
+    fontSize: 22,
     fontWeight: '300',
   },
   workoutName: {

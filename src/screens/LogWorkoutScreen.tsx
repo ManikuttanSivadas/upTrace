@@ -19,6 +19,7 @@ export default function LogWorkoutScreen() {
   const [step, setStep] = useState(1);
   const [profilePicture, setProfilePicture] = useState('');
   const [userName, setUserName] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const [workout, setWorkout] = useState<Workout>({
     id: Crypto.randomUUID(),
     date: today,
@@ -50,6 +51,9 @@ export default function LogWorkoutScreen() {
   };
 
   const saveWorkout = async () => {
+    // Prevent multiple clicks
+    if (isSaving) return;
+    
     // Validate that there are exercises with sets
     if (workout.exercises.length === 0) {
       Alert.alert(
@@ -75,6 +79,7 @@ export default function LogWorkoutScreen() {
     }
 
     try {
+      setIsSaving(true);
       await saveWorkoutToStorage(workout);
       
       // Reset the form
@@ -103,6 +108,8 @@ export default function LogWorkoutScreen() {
       );
     } catch (error) {
       Alert.alert('Error', 'Failed to save workout. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -143,13 +150,12 @@ export default function LogWorkoutScreen() {
 
       {step === 2 && (
         <View style={styles.exercisesContainer}>
-          <Text style={styles.pageTitle}>Log Workout</Text>
-          <StepIndicator step={step} />
           <ExercisesStep
             exercises={workout.exercises}
             setExercises={(v) => setWorkout({ ...workout, exercises: v })}
             onSave={saveWorkout}
             onBack={() => setStep(1)}
+            isSaving={isSaving}
           />
         </View>
       )}
@@ -179,7 +185,10 @@ const styles = StyleSheet.create({
   },
   exercisesContainer: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: 0,
+  },
+  step2Header: {
+    paddingBottom: 10,
   },
   header: {
     color: COLORS.textPrimary,
@@ -193,7 +202,16 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: -0.5,
     textAlign: 'center',
-    marginBottom: 150,
+    marginBottom: 20,
+  },
+  pageTitleStep2: {
+    color: COLORS.textPrimary,
+    fontSize: 24,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+    textAlign: 'center',
+    marginBottom: 20,
+    marginTop: 10,
   },
   avatarButton: {
     width: 44,

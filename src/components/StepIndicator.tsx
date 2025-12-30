@@ -35,8 +35,8 @@ export default function StepIndicator({ step }: { step: number }) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    marginBottom: 40,
-    marginTop: -80,
+    marginBottom: 30,
+    marginTop: 0,
     paddingVertical: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -94,18 +94,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   lineContainer: {
-    paddingHorizontal: 8,
-    paddingTop: 0,
-    paddingBottom: 20,
+    paddingHorizontal: 0,
+    paddingBottom: 26,
     width: 80,
   },
   line: {
-    height: 2,
+    height: 3,
     backgroundColor: COLORS.border,
-    marginTop: -20,
     width: 80,
+    borderRadius: 2,
   },
   activeLine: {
     backgroundColor: COLORS.primary,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
   },
 });
