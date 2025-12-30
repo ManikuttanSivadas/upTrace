@@ -11,20 +11,21 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS } from '../theme/colors';
+import { getColors } from '../theme/colors';
+import { useTheme } from '../contexts/ThemeContext';
 import { supabase } from '../config/supabase';
 
-export default function SettingsScreen() {
+function SettingsScreen() {
   const { user, logout } = useAuth();
   const navigation = useNavigation();
+  const { theme, toggleTheme } = useTheme();
+  const COLORS = getColors(theme === 'dark');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [profilePicture, setProfilePicture] = useState('');
-  
   // Settings state
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [darkModeEnabled, setDarkModeEnabled] = useState(true);
 
   useEffect(() => {
     loadProfile();
@@ -134,6 +135,146 @@ export default function SettingsScreen() {
     </View>
   );
 
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    header: {
+      padding: 16,
+      paddingTop: 60,
+    },
+    headerText: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: COLORS.textPrimary,
+    },
+    profileSection: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 16,
+      backgroundColor: COLORS.surface,
+      marginHorizontal: 16,
+      marginBottom: 24,
+      borderRadius: 12,
+    },
+    profilePicture: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+    },
+    profilePicturePlaceholder: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      backgroundColor: COLORS.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    profilePicturePlaceholderText: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: '#FFFFFF',
+    },
+    profileInfo: {
+      flex: 1,
+      marginLeft: 16,
+    },
+    profileName: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: COLORS.textPrimary,
+      marginBottom: 4,
+    },
+    profileEmail: {
+      fontSize: 14,
+      color: COLORS.textSecondary,
+    },
+    editButton: {
+      backgroundColor: COLORS.primary,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 8,
+    },
+    editButtonText: {
+      color: '#FFFFFF',
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    section: {
+      marginBottom: 24,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: COLORS.textSecondary,
+      marginBottom: 8,
+      paddingHorizontal: 16,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    settingItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: COLORS.surface,
+      padding: 16,
+      marginHorizontal: 16,
+      marginBottom: 1,
+    },
+    settingTitle: {
+      fontSize: 16,
+      color: COLORS.textPrimary,
+    },
+    settingRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    settingValue: {
+      fontSize: 16,
+      color: COLORS.textSecondary,
+      marginRight: 8,
+    },
+    arrow: {
+      fontSize: 24,
+      color: COLORS.textSecondary,
+    },
+    logoutButton: {
+      backgroundColor: COLORS.surface,
+      padding: 16,
+      marginHorizontal: 16,
+      marginBottom: 8,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    logoutButtonText: {
+      color: COLORS.primary,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    deleteButton: {
+      backgroundColor: COLORS.surface,
+      padding: 16,
+      marginHorizontal: 16,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    deleteButtonText: {
+      color: COLORS.danger,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    appInfo: {
+      alignItems: 'center',
+      paddingVertical: 32,
+    },
+    appInfoText: {
+      fontSize: 12,
+      color: COLORS.textSecondary,
+    },
+  });
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -174,8 +315,8 @@ export default function SettingsScreen() {
         />
         <SettingToggle
           title="Dark Mode"
-          value={darkModeEnabled}
-          onValueChange={setDarkModeEnabled}
+          value={theme === 'dark'}
+          onValueChange={toggleTheme}
         />
       </SettingSection>
 
@@ -223,141 +364,4 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    padding: 16,
-    paddingTop: 60,
-  },
-  headerText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: COLORS.textPrimary,
-  },
-  profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: COLORS.surface,
-    marginHorizontal: 16,
-    marginBottom: 24,
-    borderRadius: 12,
-  },
-  profilePicture: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-  },
-  profilePicturePlaceholder: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profilePicturePlaceholderText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  profileInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  profileName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: 4,
-  },
-  profileEmail: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  editButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  editButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: 8,
-    paddingHorizontal: 16,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  settingItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 1,
-  },
-  settingTitle: {
-    fontSize: 16,
-    color: COLORS.textPrimary,
-  },
-  settingRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  settingValue: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    marginRight: 8,
-  },
-  arrow: {
-    fontSize: 24,
-    color: COLORS.textSecondary,
-  },
-  logoutButton: {
-    backgroundColor: COLORS.surface,
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 8,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  logoutButtonText: {
-    color: COLORS.primary,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  deleteButton: {
-    backgroundColor: COLORS.surface,
-    padding: 16,
-    marginHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  deleteButtonText: {
-    color: COLORS.danger,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  appInfo: {
-    alignItems: 'center',
-    paddingVertical: 32,
-  },
-  appInfoText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-  },
-});
+export default SettingsScreen;

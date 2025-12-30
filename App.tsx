@@ -3,11 +3,16 @@ import 'react-native-gesture-handler';
 import { View, StatusBar, ActivityIndicator } from 'react-native';
 import BottomTabs from './src/navigation/BottomTabs';
 import AuthNavigator from './src/navigation/AuthNavigator';
-import { COLORS } from './src/theme/colors';
+
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
+import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
+import { getColors } from './src/theme/colors';
+
 
 function AppContent() {
   const { user, isLoading } = useAuth();
+  const { theme } = useTheme();
+  const COLORS = getColors(theme === 'dark');
 
   if (isLoading) {
     return (
@@ -19,7 +24,7 @@ function AppContent() {
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.background }}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle={theme === 'dark' ? 'light-content' : 'dark-content'} />
       {user ? <BottomTabs /> : <AuthNavigator />}
     </View>
   );
@@ -28,7 +33,9 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
     </AuthProvider>
   );
 }
